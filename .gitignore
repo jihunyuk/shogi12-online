@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.vite/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Android build artifacts
+android/
+android/.gradle/
+android/app/build/
+*.apk
+*.aab
+*.keystore
+
+# iOS build artifacts
+ios/
+*.ipa
+*.xcarchive
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+.cache/
+.eslintcache
+.parcelcache
+
+# OS junk files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# TypeScript
+*.tsbuildinfo

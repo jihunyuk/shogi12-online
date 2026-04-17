@@ -4,6 +4,8 @@ export type Side = 'top' | 'bottom';
 
 export type GameMode = 'local' | 'ai' | 'online';
 
+export type AiDifficulty = 'easy' | 'medium' | 'hard';
+
 export type GameStatus = 'waiting' | 'playing' | 'finished';
 
 export interface Piece {
@@ -65,6 +67,9 @@ export interface GameState {
   /** The side that won, or null if the game is not yet finished. */
   winner: Side | null;
 
+  /** How the game ended. Null while the game is in progress. */
+  winReason: 'capture' | 'entry' | 'timeout' | null;
+
   /** Ordered list of all moves made in the game. */
   moveHistory: MoveRecord[];
 
@@ -93,5 +98,9 @@ export interface GameState {
     opponentId: string | null;
     /** Monotonically increasing version used to detect out-of-order updates. */
     syncVersion: number;
+    /** This player's profile (for HUD display). */
+    myProfile: { id: string; nickname: string; rating: number; countryCode: string } | null;
+    /** Opponent's profile (null until opponent is known). */
+    opponentProfile: { id: string; nickname: string; rating: number; countryCode: string } | null;
   };
 }

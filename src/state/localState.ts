@@ -1,24 +1,26 @@
-import type { Action, Coord, GameMode, GameState, Side } from '@/types';
+import type { Action, AiDifficulty, Coord, DropAction, GameMode, GameState, PieceType, Side } from '@/types';
 import { createInitialGameState, cloneGameState, getOpponent } from '@/engine/gameState';
 import { isLegalAction, applyAction, getLegalMoves } from '@/engine/rules';
 import { checkWinAfterAction, checkTimerExpiry } from '@/engine/winCondition';
 import { startTimer, isTimerExpired } from '@/engine/timer';
 import { chooseAction } from '@/ai/ai';
 
-const AI_SIDE: Side = 'bottom';
+const AI_SIDE: Side = 'top';
 const AI_THINK_DELAY_MS = 500;
 
 export class LocalGameController {
   private _state: GameState;
   private readonly _mode: GameMode;
+  private readonly _difficulty: AiDifficulty;
   private _selectedCoord: Coord | null = null;
   private _aiThinking = false;
 
   /** UI callback — fired on every state change. */
   onStateChange: ((state: GameState) => void) | null = null;
 
-  constructor(mode: GameMode) {
+  constructor(mode: GameMode, difficulty: AiDifficulty = 'medium') {
     this._mode = mode;
+    this._difficulty = difficulty;
     this._state = createInitialGameState(mode);
   }
 
@@ -80,6 +82,14 @@ export class LocalGameController {
     this._selectedCoord = coord;
   }
 
+  /** Returns all valid drop target cells for the given reserve piece. */
+  getLegalDropTargets(piece: PieceType): Coord[] {
+    if (this._state.status !== 'playing') return [];
+    return getLegalMoves(this._state)
+      .filter((a): a is DropAction => a.kind === 'drop' && a.piece === piece)
+      .map(a => a.to);
+  }
+
   /** Returns legal move actions originating from the currently selected coord. */
   getLegalMovesForSelected(): Action[] {
     if (this._selectedCoord === null || this._state.status !== 'playing') return [];
@@ -118,7 +128,7 @@ export class LocalGameController {
         return;
       }
 
-      const action = chooseAction(this._state, AI_SIDE);
+      const action = chooseAction(this._state, AI_SIDE, this._difficulty);
       if (action !== null) {
         this._applyAndAdvance(action);
       }

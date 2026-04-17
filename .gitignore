@@ -12,16 +12,20 @@ build/
 .env.production
 .env.staging
 
-# Android build artifacts
-android/
+# Android native platform
 android/.gradle/
 android/app/build/
+android/.idea/
+android/local.properties
+android/app/google-services.json
 *.apk
 *.aab
 *.keystore
 
-# iOS build artifacts
-ios/
+# iOS native platform
+ios/App/build/
+ios/App/Pods/
+ios/App/Podfile.lock
 *.ipa
 *.xcarchive
 

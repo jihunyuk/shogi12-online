@@ -36,7 +36,7 @@ export function checkWinAfterAction(
 
   // 1. Capture victory
   if (!isKingOnBoard(nextState.board, opponentSide)) {
-    return { ...nextState, winner: actingSide, status: 'finished' };
+    return { ...nextState, winner: actingSide, winReason: 'capture', status: 'finished' };
   }
 
   // 3. Entry victory check:
@@ -46,7 +46,7 @@ export function checkWinAfterAction(
   if (prevState.entryState !== null && prevState.entryState.side === opponentSide) {
     // The acting side's turn was the opponent's chance to capture — they did not (capture
     // victory above would have caught it). So the entering side wins.
-    return { ...nextState, winner: opponentSide, status: 'finished' };
+    return { ...nextState, winner: opponentSide, winReason: 'entry', status: 'finished' };
   }
 
   // 2. Entry state detection: did the acting side's 王 just reach the last row?
@@ -75,5 +75,5 @@ export function checkTimerExpiry(state: GameState): GameState {
   }
 
   const winner: Side = state.currentTurn === 'top' ? 'bottom' : 'top';
-  return { ...state, winner, status: 'finished' };
+  return { ...state, winner, winReason: 'timeout', status: 'finished' };
 }

@@ -1,47 +1,73 @@
+import { AdMob, AdMobRewardItem } from '@capacitor-community/admob';
+
 /**
- * Ads Service — placeholder boundary for future Google AdMob integration.
- *
- * This module isolates all ad-related logic from gameplay.
- * When Capacitor + AdMob are added, implement the functions below.
- * The game engine and UI scenes call these functions at defined boundaries;
- * no other file should reference AdMob directly.
- *
- * Planned ad placements:
- *   - Interstitial: after game end (result screen)
- *   - Rewarded: optional extension (future)
- *   - Banner: bottom-safe-area of game screen (layout reserved)
+ * AdsService — Capacitor AdMob을 이용한 네이티브 광고 연동 서비스
  */
+export const AdsService = {
+  async init(): Promise<void> {
+    try {
+      await AdMob.initialize({
+        initializeForTesting: true, // 테스트 모드 활성화
+      });
+    } catch (e) {
+      console.error('[AdsService] Initialize failed:', e);
+    }
+  },
 
-export interface AdsConfig {
-  appId: string;
-  interstitialId: string;
-  rewardedId: string;
-  bannerId: string;
-}
+  notifyLoadingStop(): void {},
+  gameplayStart(): void {},
+  gameplayStop(): void {},
 
-/** Initialize AdMob — call once at app startup when ready. */
-export async function initAds(_config: AdsConfig): Promise<void> {
-  // TODO: await AdMob.initialize({ ... })
-}
+  /**
+   * 전면 광고 (Interstitial) - 경기 종료 시 호출
+   */
+  async showInterstitial(_scene: unknown, onClose: () => void): Promise<void> {
+    const adId = import.meta.env.VITE_ADMOB_INTERSTITIAL_ID;
+    if (!adId) {
+      console.warn('[AdsService] No Interstitial Ad ID found.');
+      onClose();
+      return;
+    }
 
-/** Show interstitial ad after game ends. */
-export async function showInterstitial(): Promise<void> {
-  // TODO: await AdMob.prepareInterstitial({ adId: config.interstitialId })
-  //       await AdMob.showInterstitial()
-}
+    try {
+      await AdMob.prepareInterstitial({ adId });
+      await AdMob.showInterstitial();
+      // 광고가 닫혔을 때의 콜백은 AdMob 플러그인 리스너로 처리할 수도 있으나, 
+      // 단순 구현을 위해 show 완료 후 바로 리턴합니다.
+      onClose();
+    } catch (e) {
+      console.error('[AdsService] Interstitial failed:', e);
+      onClose();
+    }
+  },
 
-/** Show rewarded ad — future use. */
-export async function showRewarded(): Promise<boolean> {
-  // TODO: implement rewarded ad flow
-  return false;
-}
+  /**
+   * 리워드 광고 (Rewarded) - 티켓 충전용
+   */
+  async showRewarded(_scene: unknown, onRewarded: () => void, onSkipped: () => void): Promise<void> {
+    const adId = import.meta.env.VITE_ADMOB_REWARD_ID;
+    if (!adId) {
+      console.warn('[AdsService] No Rewarded Ad ID found.');
+      onRewarded(); // 개발 편의를 위해 일단 보상 지급
+      return;
+    }
 
-/** Show banner ad — call after game scene is ready. */
-export async function showBanner(): Promise<void> {
-  // TODO: await AdMob.showBanner({ adId: config.bannerId, position: BannerAdPosition.BOTTOM_CENTER })
-}
+    try {
+      await AdMob.prepareRewardVideoAd({ adId });
+      const reward: AdMobRewardItem = await AdMob.showRewardVideoAd();
+      
+      if (reward && reward.amount > 0) {
+        onRewarded();
+      } else {
+        onSkipped();
+      }
+    } catch (e) {
+      console.error('[AdsService] Rewarded failed:', e);
+      onRewarded(); // 에러 시에도 일단 진행 (실제 배포 시엔 처리 필요)
+    }
+  },
 
-/** Hide banner ad — call before returning to menu. */
-export async function hideBanner(): Promise<void> {
-  // TODO: await AdMob.hideBanner()
-}
+  // 레거시 메서드 호환성 유지
+  requestMidgameAd(onDone: () => void): void { this.showInterstitial(null, onDone); },
+  requestRewardedAd(onRewarded: () => void, onSkipped: () => void): void { this.showRewarded(null, onRewarded, onSkipped); },
+};

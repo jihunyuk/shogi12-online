@@ -1,47 +1,125 @@
-import type { Action, GameState, Side } from '@/types';
+import type { Action, AiDifficulty, GameState, Side } from '@/types';
 import { getOpponent } from '@/engine/gameState';
-import { generateAllMoves } from './moveGenerator';
+import { getLegalMoves, applyAction } from '@/engine/rules';
+import { checkWinAfterAction } from '@/engine/winCondition';
+import { evaluateBoard } from './evaluator';
 
-/**
- * Configuration for future minimax / alpha-beta upgrade.
- * depth and randomize are unused in the current implementation but
- * accepted so call-sites are forward-compatible.
- */
-export interface AIConfig {
-  depth: number;
-  randomize: boolean;
-}
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function pickRandom<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+/** Returns any move that immediately captures the opponent's 王. */
+function findKingCapture(state: GameState, moves: Action[]): Action | null {
+  const opponent = getOpponent(state.currentTurn);
+  const { board } = state;
+  const hits = moves.filter(a => {
+    if (a.kind === 'drop') return false;
+    const t = board[a.to.row][a.to.col];
+    return t !== null && t.side === opponent && t.type === '王';
+  });
+  return hits.length > 0 ? pickRandom(hits) : null;
+}
+
+/** Returns moves that capture any opponent piece (excluding king-only check). */
+function findCaptures(state: GameState, moves: Action[]): Action[] {
+  const opponent = getOpponent(state.currentTurn);
+  const { board } = state;
+  return moves.filter(a => {
+    if (a.kind === 'drop') return false;
+    const t = board[a.to.row][a.to.col];
+    return t !== null && t.side === opponent;
+  });
+}
+
+// ── Minimax with alpha-beta pruning ──────────────────────────────────────────
+
+function minimax(
+  state: GameState,
+  depth: number,
+  alpha: number,
+  beta: number,
+  aiSide: Side,
+): number {
+  if (state.status === 'finished' || depth === 0) {
+    return evaluateBoard(state, aiSide);
+  }
+
+  const moves = getLegalMoves(state);
+  if (moves.length === 0) return evaluateBoard(state, aiSide);
+
+  if (state.currentTurn === aiSide) {
+    // Maximising
+    let best = -Infinity;
+    for (const move of moves) {
+      const next = checkWinAfterAction(state, applyAction(state, move), move);
+      const score = minimax(next, depth - 1, alpha, beta, aiSide);
+      if (score > best) best = score;
+      if (score > alpha) alpha = score;
+      if (beta <= alpha) break;
+    }
+    return best;
+  } else {
+    // Minimising
+    let best = Infinity;
+    for (const move of moves) {
+      const next = checkWinAfterAction(state, applyAction(state, move), move);
+      const score = minimax(next, depth - 1, alpha, beta, aiSide);
+      if (score < best) best = score;
+      if (score < beta) beta = score;
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
 /**
- * Chooses an action for `side` given the current game state.
+ * Runs minimax from the root and returns the best action found.
+ * Shared by all difficulties — only the search depth differs.
+ */
+function bestActionByMinimax(state: GameState, side: Side, depth: number): Action {
+  const moves = getLegalMoves(state);
+  let bestScore = -Infinity;
+  let bestMove  = moves[0];
+
+  for (const move of moves) {
+    const next  = checkWinAfterAction(state, applyAction(state, move), move);
+    const score = minimax(next, depth - 1, -Infinity, Infinity, side);
+    if (score > bestScore) { bestScore = score; bestMove = move; }
+  }
+
+  return bestMove;
+}
+
+/**
+ * Chooses an action for `side` based on the requested difficulty level.
  *
- * Strategy (v1 — simple but correct):
- *   1. Generate all legal moves for the current turn.
- *   2. If none, return null.
- *   3. Prefer any move that captures the opponent's 王; pick one randomly.
- *   4. Otherwise pick a uniformly random legal move.
+ * 하 (easy)   — minimax depth-3: makes sensible moves but plans only 3 plies ahead
+ * 중 (medium) — minimax depth-4: moderate lookahead, noticeably stronger than easy
+ * 상 (hard)   — minimax depth-5: full search with alpha-beta pruning
+ *
+ * All levels immediately take a winning king-capture when available.
  */
 export function chooseAction(
   state: GameState,
   side: Side,
-  _config: AIConfig = { depth: 1, randomize: true },
+  difficulty: AiDifficulty = 'medium',
 ): Action | null {
-  const moves = generateAllMoves(state);
+  const moves = getLegalMoves(state);
   if (moves.length === 0) return null;
 
-  const opponentSide = getOpponent(side);
-  const { board } = state;
+  // Every difficulty instantly takes the winning move.
+  const kingCapture = findKingCapture(state, moves);
+  if (kingCapture) return kingCapture;
 
-  const kingCaptures = moves.filter(action => {
-    if (action.kind === 'drop') return false;
-    const target = board[action.to.row][action.to.col];
-    return target !== null && target.side === opponentSide && target.type === '王';
-  });
+  const depthMap: Record<AiDifficulty, number> = {
+    easy:   3,
+    medium: 4,
+    hard:   5,
+  };
 
-  if (kingCaptures.length > 0) return pickRandom(kingCaptures);
-  return pickRandom(moves);
+  return bestActionByMinimax(state, side, depthMap[difficulty]);
 }

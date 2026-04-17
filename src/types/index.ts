@@ -2,6 +2,7 @@ export type {
   PieceType,
   Side,
   GameMode,
+  AiDifficulty,
   GameStatus,
   Piece,
   Cell,
@@ -14,7 +15,7 @@ export type {
   GameState,
 } from './game';
 
-export type { PlayerInfo } from './player';
+export type { PlayerInfo, PlayerProfile } from './player';
 
 export type {
   RoomStatus,

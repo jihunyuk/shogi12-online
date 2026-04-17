@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Generator - Shogi12 Online</title>
+    <style>
+        body {
+            background-color: #0d0d1a;
+            color: #fff;
+            font-family: sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        h1 { color: #c8a020; }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #555;
+        }
+        button {
+            background: #c8a020;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover { background: #e0b830; }
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>CrazyGames Asset Generator</h1>
+    <p>아래 버튼을 누르면 브라우저가 자동으로 고화질 에셋 이미지를 그려서 다운로드합니다.</p>
+
+    <div class="container">
+        <h2>Landscape 16:9 (1920x1080)</h2>
+        <canvas id="cLand" width="1920" height="1080" style="width: 600px;"></canvas>
+        <button onclick="download('cLand', 'landscape-1920x1080.png')">다운로드 (1920x1080)</button>
+    </div>
+
+    <div class="container">
+        <h2>Portrait 2:3 (800x1200)</h2>
+        <canvas id="cPort" width="800" height="1200" style="width: 400px;"></canvas>
+        <button onclick="download('cPort', 'portrait-800x1200.png')">다운로드 (800x1200)</button>
+    </div>
+
+    <div class="container">
+        <h2>Square 1:1 (800x800)</h2>
+        <canvas id="cSq" width="800" height="800" style="width: 400px;"></canvas>
+        <button onclick="download('cSq', 'square-800x800.png')">다운로드 (800x800)</button>
+    </div>
+
+    <script>
+        const cBg = '#1e0f07';
+        const cGold = '#c8a020';
+        const cRed = '#ef4444';
+        const cGreen = '#22c55e';
+        const cWhite = '#ffffff';
+
+        function drawPiece(ctx, cx, cy, size, type, isRed) {
+            const tileColor = isRed ? cRed : cGreen;
+            ctx.fillStyle = tileColor;
+            ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+            ctx.fillRect(cx - size/2, cy - size/2, size, size);
+            ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+            const pad = size * 0.1;
+            ctx.fillStyle = cWhite;
+            ctx.fillRect(cx - size/2 + pad, cy - size/2 + pad, size - pad*2, size - pad*2);
+
+            ctx.fillStyle = '#000';
+            ctx.font = `bold ${size*0.35}px "Noto Sans KR", Arial`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(type, cx, cy);
+
+            const d = size * 0.28; const tSize = size * 0.05;
+            let dirs = [];
+            if (type === '王') dirs = [[0, -d], [0, d], [-d, 0], [d, 0], [-d, -d], [d, -d], [-d, d], [d, d]];
+            else if (type === '將') dirs = [[0, -d], [0, d], [-d, 0], [d, 0]];
+            else if (type === '相') dirs = [[-d, -d], [d, -d], [-d, d], [d, d]];
+            else if (type === '子') dirs = [[0, -d]];
+            else if (type === '後') dirs = [[0, -d], [0, d], [-d, 0], [d, 0], [-d, -d], [d, -d]];
+            
+            ctx.fillStyle = '#000';
+            dirs.forEach(([dx, dy]) => {
+                ctx.beginPath();
+                const tx = cx + dx; const ty = cy + dy;
+                const angle = Math.atan2(dy, dx);
+                ctx.moveTo(tx + Math.cos(angle)*tSize, ty + Math.sin(angle)*tSize);
+                ctx.lineTo(tx + Math.cos(angle+2.5)*tSize, ty + Math.sin(angle+2.5)*tSize);
+                ctx.lineTo(tx + Math.cos(angle-2.5)*tSize, ty + Math.sin(angle-2.5)*tSize);
+                ctx.fill();
+            });
+        }
+
+        // 1. LANDSCAPE 1920x1080
+        const cL = document.getElementById('cLand');
+        const ctxL = cL.getContext('2d');
+        ctxL.fillStyle = cBg; ctxL.fillRect(0,0,1920,1080);
+        
+        ctxL.strokeStyle = 'rgba(200,160,32,0.1)'; ctxL.lineWidth = 6;
+        for(let i=0; i<1920; i+=80) { ctxL.beginPath(); ctxL.moveTo(i, 0); ctxL.lineTo(i+300, 1080); ctxL.stroke(); }
+        
+        ctxL.strokeStyle = cGold; ctxL.lineWidth = 24; ctxL.strokeRect(30, 30, 1920-60, 1080-60);
+
+        ctxL.fillStyle = cGold; ctxL.font = 'bold 160px Arial'; ctxL.textAlign = 'left';
+        ctxL.shadowColor = '#000'; ctxL.shadowBlur = 30; ctxL.shadowOffsetY = 15;
+        ctxL.fillText('SHOGI12', 160, 460);
+        ctxL.fillStyle = '#fff'; ctxL.font = 'bold 130px Arial'; ctxL.fillText('ONLINE', 160, 610);
+        ctxL.shadowBlur = 0; ctxL.shadowOffsetY = 0;
+        ctxL.fillStyle = '#aaa'; ctxL.font = '42px Arial'; ctxL.fillText('Quick & Intense Tactical Battles', 160, 720);
+
+        drawPiece(ctxL, 1350, 540, 500, '王', true);
+        ctxL.globalAlpha = 0.8; drawPiece(ctxL, 1720, 280, 240, '將', false);
+        drawPiece(ctxL, 950, 840, 220, '相', false); ctxL.globalAlpha = 1.0;
+
+        // 2. PORTRAIT 800x1200
+        const cP = document.getElementById('cPort');
+        const ctxP = cP.getContext('2d');
+        ctxP.fillStyle = cBg; ctxP.fillRect(0,0,800,1200);
+        ctxP.strokeStyle = cGold; ctxP.lineWidth = 16; ctxP.strokeRect(20, 20, 800-40, 1200-40);
+
+        ctxP.fillStyle = cGold; ctxP.font = 'bold 100px Arial'; ctxP.textAlign = 'center';
+        ctxP.shadowColor = '#000'; ctxP.shadowBlur = 20; ctxP.shadowOffsetY = 10;
+        ctxP.fillText('SHOGI12', 400, 220);
+        ctxP.fillStyle = '#fff'; ctxP.font = 'bold 80px Arial'; ctxP.fillText('ONLINE', 400, 320);
+        ctxP.shadowBlur = 0; ctxP.shadowOffsetY = 0;
+        ctxP.fillStyle = '#aaa'; ctxP.font = '32px Arial'; ctxP.fillText('Quick & Intense Tactical', 400, 400);
+
+        drawPiece(ctxP, 400, 760, 420, '王', true);
+        ctxP.globalAlpha = 0.8; drawPiece(ctxP, 200, 1040, 180, '將', false);
+        drawPiece(ctxP, 600, 500, 160, '相', false); ctxP.globalAlpha = 1.0;
+
+        // 3. SQUARE 800x800
+        const cS = document.getElementById('cSq');
+        const ctxS = cS.getContext('2d');
+        ctxS.fillStyle = cBg; ctxS.fillRect(0,0,800,800);
+        ctxS.strokeStyle = cGold; ctxS.lineWidth = 16; ctxS.strokeRect(20, 20, 800-40, 800-40);
+
+        drawPiece(ctxS, 400, 360, 400, '王', true);
+        ctxS.fillStyle = cGold; ctxS.font = 'bold 75px Arial'; ctxS.textAlign = 'center';
+        ctxS.fillText('SHOGI12 ONLINE', 400, 680);
+
+        // Download helper
+        function download(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>

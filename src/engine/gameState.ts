@@ -22,10 +22,11 @@ export function createInitialGameState(mode: GameMode, online?: GameState['onlin
 
   return {
     board,
-    currentTurn: 'top',
+    currentTurn: 'bottom',
     reserves: { top: [], bottom: [] },
     status: 'waiting',
     winner: null,
+    winReason: null,
     moveHistory: [],
     mode,
     turnStartedAt: 0,

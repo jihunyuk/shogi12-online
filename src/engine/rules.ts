@@ -86,12 +86,16 @@ export function getLegalMoves(state: GameState): Action[] {
     }
   }
 
-  // Drop actions
+  // Drop actions — anywhere except the opponent's back row
+  // top player: rows 0–2 (row 3 is opponent's territory)
+  // bottom player: rows 1–3 (row 0 is opponent's territory)
   const hand = reserves[currentTurn];
   const unique = [...new Set(hand)];
 
   for (const pieceType of unique) {
     for (let row = 0; row < 4; row++) {
+      const isOpponentRow = currentTurn === 'top' ? row === 3 : row === 0;
+      if (isOpponentRow) continue;
       for (let col = 0; col < 3; col++) {
         if (board[row][col] === null) {
           actions.push({ kind: 'drop', piece: pieceType, to: { row, col } } satisfies DropAction);

@@ -4,6 +4,7 @@ import { LocalGameController, OnlineGameController } from '@/state/stateManager'
 import type { AiDifficulty, Coord, DropAction, GameMode, GameState, Piece, PieceType, Side } from '@/types';
 import { BOARD_COLS, BOARD_ROWS, CELL_SIZE, COLORS, FONT_FAMILY, FONT_SIZES } from '@/config/gameConfig';
 import { GAME_WIDTH, GAME_HEIGHT } from '@/config/phaserConfig';
+import { AdsService } from '@/ads/adsService';
 import { getRemainingSeconds } from '@/engine/timer';
 
 
@@ -75,6 +76,9 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.fadeIn(400, 30, 15, 7);
+
+    // 게임 종료 시 보여줄 전면 광고 미리 로드
+    void AdsService.prepareInterstitial();
 
 
     // For local / ai mode create controller synchronously (no async needed)

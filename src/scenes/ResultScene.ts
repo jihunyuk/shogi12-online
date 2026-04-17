@@ -102,7 +102,7 @@ export class ResultScene extends Phaser.Scene {
     // Win reason sub-label
     const reasonKey = this._reasonKey(isWin);
     if (reasonKey) {
-      this.add.text(cx, resultLblY + 30, t(reasonKey), {
+      this.add.text(cx, resultLblY + 36, t(reasonKey), {
         fontFamily: FONT_FAMILY, fontSize: '12px',
         color: isWin ? COLORS.textGold : COLORS.textSecondary,
       }).setOrigin(0.5);

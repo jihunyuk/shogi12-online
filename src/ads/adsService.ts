@@ -19,24 +19,41 @@ export const AdsService = {
   gameplayStop(): void {},
 
   /**
+   * 전면 광고 미리 준비 (GameScene 시작 시 호출 권장)
+   */
+  async prepareInterstitial(): Promise<void> {
+    const adId = import.meta.env.VITE_ADMOB_INTERSTITIAL_ID;
+    if (!adId) return;
+    try {
+      await AdMob.prepareInterstitial({ adId });
+      console.log('[AdsService] Interstitial prepared.');
+    } catch (e) {
+      console.error('[AdsService] Prepare Interstitial failed:', e);
+    }
+  },
+
+  /**
    * 전면 광고 (Interstitial) - 경기 종료 시 호출
    */
   async showInterstitial(_scene: unknown, onClose: () => void): Promise<void> {
     const adId = import.meta.env.VITE_ADMOB_INTERSTITIAL_ID;
     if (!adId) {
-      console.warn('[AdsService] No Interstitial Ad ID found.');
       onClose();
       return;
     }
 
     try {
-      await AdMob.prepareInterstitial({ adId });
+      // 이미 준비된 광고가 있으면 바로 보여주고, 없으면 여기서 다시 prepare 시도
       await AdMob.showInterstitial();
-      // 광고가 닫혔을 때의 콜백은 AdMob 플러그인 리스너로 처리할 수도 있으나, 
-      // 단순 구현을 위해 show 완료 후 바로 리턴합니다.
       onClose();
     } catch (e) {
-      console.error('[AdsService] Interstitial failed:', e);
+      // show 실패 시 (예: 로드 안됨) 다시 prepare 시도 후 show
+      try {
+        await AdMob.prepareInterstitial({ adId });
+        await AdMob.showInterstitial();
+      } catch (innerE) {
+        console.error('[AdsService] Interstitial show failed:', innerE);
+      }
       onClose();
     }
   },

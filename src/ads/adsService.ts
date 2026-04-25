@@ -7,7 +7,7 @@ export const AdsService = {
   async init(): Promise<void> {
     try {
       await AdMob.initialize({
-        initializeForTesting: true, // 테스트 모드 활성화
+        initializeForTesting: import.meta.env.DEV || import.meta.env.VITE_ADMOB_TESTING === 'true',
       });
     } catch (e) {
       console.error('[AdsService] Initialize failed:', e);

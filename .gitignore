@@ -17,10 +17,12 @@ android/.gradle/
 android/app/build/
 android/.idea/
 android/local.properties
+android/keystore.properties
 android/app/google-services.json
 *.apk
 *.aab
 *.keystore
+*.jks
 
 # iOS native platform
 ios/App/build/
@@ -38,6 +40,7 @@ yarn-error.log*
 
 # Cache
 .cache/
+.gradle-user-home/
 .eslintcache
 .parcelcache
 

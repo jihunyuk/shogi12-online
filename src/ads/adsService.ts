@@ -1,4 +1,4 @@
-import { AdMob, AdMobRewardItem } from '@capacitor-community/admob';
+import { AdMob, AdMobRewardItem, AdmobConsentStatus } from '@capacitor-community/admob';
 
 /**
  * AdsService — Capacitor AdMob을 이용한 네이티브 광고 연동 서비스
@@ -9,8 +9,14 @@ export const AdsService = {
       await AdMob.initialize({
         initializeForTesting: import.meta.env.DEV || import.meta.env.VITE_ADMOB_TESTING === 'true',
       });
+
+      // 최신 AdMob 정책에 따른 UMP(User Messaging Platform) 동의 폼 호출
+      const consentInfo = await AdMob.requestConsentInfo();
+      if (consentInfo.isConsentFormAvailable && consentInfo.status === AdmobConsentStatus.REQUIRED) {
+        await AdMob.showConsentForm();
+      }
     } catch (e) {
-      console.error('[AdsService] Initialize failed:', e);
+      console.error('[AdsService] Initialize or Consent failed:', e);
     }
   },
 

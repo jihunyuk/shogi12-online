@@ -391,9 +391,10 @@ END;
 $$;
 
 -- ================================================================
--- VIEW: leaderboard
+-- VIEW: leaderboard (security_invoker 활성화로 Supabase 보안 경고 해결)
 -- ================================================================
-CREATE OR REPLACE VIEW leaderboard AS
+CREATE OR REPLACE VIEW leaderboard
+WITH (security_invoker = true) AS
 SELECT
   p.id,
   p.nickname,

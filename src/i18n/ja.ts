@@ -21,6 +21,7 @@ export const ja = {
 
   'result.win': '勝ちました！',
   'result.lose': '負けました。',
+  'result.draw': '引き分け',
   'result.playAgain': 'もう一度',
   'result.backToMenu': 'メニューに戻る',
 
@@ -30,6 +31,9 @@ export const ja = {
   'result.reason.capturedByOpponent':'王が取られました',
   'result.reason.opponentEntry':     '相手の入玉勝ち',
   'result.reason.timeout':           '時間切れで敗北',
+  'result.reason.repetition':        '千日手 (同形三回反復)',
+  'result.evalGraphTitle':           '形勢分析グラフ',
+  'game.advantage':                  '形勢',
 
   'rules.title': 'ゲームルール',
   'rules.objective': '目的',
@@ -87,6 +91,7 @@ export const ja = {
   'menu.difficulty.easy':   '初級',
   'menu.difficulty.medium': '中級',
   'menu.difficulty.hard':   '上級',
+  'menu.difficulty.master': '達人 (Master)',
 
   'matchmaking.ratingBased':    'レーティングマッチ',
   'matchmaking.autoMatch':      '近いレーティングの相手と自動マッチングします',

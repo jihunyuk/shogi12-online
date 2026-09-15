@@ -21,6 +21,7 @@ export const ko = {
 
   'result.win': '승리하셨습니다!',
   'result.lose': '패배하셨습니다.',
+  'result.draw': '무승부',
   'result.playAgain': '다시 하기',
   'result.backToMenu': '메뉴로 돌아가기',
 
@@ -30,6 +31,9 @@ export const ko = {
   'result.reason.capturedByOpponent':'王이 잡혔습니다',
   'result.reason.opponentEntry':     '상대방의 입왕',
   'result.reason.timeout':           '시간 초과로 패배',
+  'result.reason.repetition':        '동일 국면 3회 반복 (천일수)',
+  'result.evalGraphTitle':           '수순별 형세 분석 그래프',
+  'game.advantage':                  '형세',
 
   'rules.title': '게임 규칙',
   'rules.objective': '목표',
@@ -87,6 +91,7 @@ export const ko = {
   'menu.difficulty.easy':   '하',
   'menu.difficulty.medium': '중',
   'menu.difficulty.hard':   '상',
+  'menu.difficulty.master': '달인 (Master)',
 
   'matchmaking.ratingBased':    '레이팅 기반 매칭',
   'matchmaking.autoMatch':      '유사한 레이팅의 상대와 자동 매칭됩니다',

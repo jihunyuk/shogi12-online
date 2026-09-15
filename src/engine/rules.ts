@@ -1,5 +1,6 @@
 import type { Action, Board, Coord, DropAction, GameState, MoveAction, Piece, PieceType } from '@/types';
 import { cloneGameState, getOpponent, getPiece, isInBounds, setPiece } from './gameState';
+import { computeZobristHash, zobristToString } from './zobrist';
 
 export function getMoveCandidates(board: Board, coord: Coord, piece: Piece): Coord[] {
   const { type, side } = piece;
@@ -161,16 +162,19 @@ export function applyAction(state: GameState, action: Action): GameState {
     next.board = setPiece(next.board, to, { type: pieceType, side: currentTurn, promoted: false });
   }
 
+  next.currentTurn = opponent;
+  next.turnStartedAt = Date.now();
+
+  const nextHash = zobristToString(computeZobristHash(next));
+
   next.moveHistory.push({
     moveNumber,
     side: currentTurn,
     action,
     ...(capturedPiece !== undefined ? { capturedPiece } : {}),
     timestamp: Date.now(),
+    zobristHash: nextHash,
   });
-
-  next.currentTurn = opponent;
-  next.turnStartedAt = Date.now();
 
   return next;
 }

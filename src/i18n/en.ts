@@ -21,6 +21,7 @@ export const en = {
 
   'result.win': 'You Win!',
   'result.lose': 'You Lose.',
+  'result.draw': 'Draw Game',
   'result.playAgain': 'Play Again',
   'result.backToMenu': 'Back to Menu',
 
@@ -30,6 +31,9 @@ export const en = {
   'result.reason.capturedByOpponent':'Your 王 was captured',
   'result.reason.opponentEntry':     'Opponent\'s Entry Victory',
   'result.reason.timeout':           'Time ran out',
+  'result.reason.repetition':        'Threefold Repetition (Sennichite)',
+  'result.evalGraphTitle':           'Game Evaluation Graph',
+  'game.advantage':                  'Advantage',
 
   'rules.title': 'Game Rules',
   'rules.objective': 'Objective',
@@ -87,6 +91,7 @@ export const en = {
   'menu.difficulty.easy':   'Easy',
   'menu.difficulty.medium': 'Medium',
   'menu.difficulty.hard':   'Hard',
+  'menu.difficulty.master': 'Master',
 
   'matchmaking.ratingBased':    'Rating-based Matching',
   'matchmaking.autoMatch':      'Auto-matched with players of similar rating',

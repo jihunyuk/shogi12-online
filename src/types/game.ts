@@ -4,7 +4,7 @@ export type Side = 'top' | 'bottom';
 
 export type GameMode = 'local' | 'ai' | 'online';
 
-export type AiDifficulty = 'easy' | 'medium' | 'hard';
+export type AiDifficulty = 'easy' | 'medium' | 'hard' | 'master';
 
 export type GameStatus = 'waiting' | 'playing' | 'finished';
 
@@ -49,6 +49,8 @@ export interface MoveRecord {
   action: Action;
   capturedPiece?: PieceType;
   timestamp: number;
+  evalScore?: number;
+  zobristHash?: string;
 }
 
 export interface GameState {
@@ -64,11 +66,11 @@ export interface GameState {
   /** Overall lifecycle status of the game. */
   status: GameStatus;
 
-  /** The side that won, or null if the game is not yet finished. */
-  winner: Side | null;
+  /** The side that won, 'draw' if tied, or null if the game is not yet finished. */
+  winner: Side | 'draw' | null;
 
   /** How the game ended. Null while the game is in progress. */
-  winReason: 'capture' | 'entry' | 'timeout' | null;
+  winReason: 'capture' | 'entry' | 'timeout' | 'repetition' | null;
 
   /** Ordered list of all moves made in the game. */
   moveHistory: MoveRecord[];

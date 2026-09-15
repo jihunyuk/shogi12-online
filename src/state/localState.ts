@@ -3,7 +3,7 @@ import { createInitialGameState, cloneGameState, getOpponent } from '@/engine/ga
 import { isLegalAction, applyAction, getLegalMoves } from '@/engine/rules';
 import { checkWinAfterAction, checkTimerExpiry } from '@/engine/winCondition';
 import { startTimer, isTimerExpired } from '@/engine/timer';
-import { chooseAction } from '@/ai/ai';
+import { chooseAction, getGameStateEvaluation } from '@/ai/ai';
 
 const AI_SIDE: Side = 'top';
 const AI_THINK_DELAY_MS = 500;
@@ -113,6 +113,13 @@ export class LocalGameController {
     const prevState = this._state;
     let next = applyAction(cloneGameState(prevState), action);
     next = checkWinAfterAction(prevState, next, action);
+
+    // Record evaluation score for history analysis and graph review
+    const lastRecord = next.moveHistory[next.moveHistory.length - 1];
+    if (lastRecord) {
+      lastRecord.evalScore = getGameStateEvaluation(next);
+    }
+
     this._state = next;
     this._selectedCoord = null;
     this.onStateChange?.(this._state);

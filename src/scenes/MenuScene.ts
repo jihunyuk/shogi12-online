@@ -135,8 +135,8 @@ export class MenuScene extends Phaser.Scene {
   private _showDifficultyPicker(): void {
     const cx = GAME_WIDTH / 2;
     const cy = GAME_HEIGHT / 2;
-    const panelW = 270;
-    const panelH = 260;
+    const panelW = 280;
+    const panelH = 310;
     const panelX = cx - panelW / 2;
     const panelY = cy - panelH / 2;
 
@@ -161,7 +161,7 @@ export class MenuScene extends Phaser.Scene {
     panel.strokeRoundedRect(panelX + 6, panelY + 6, panelW - 12, panelH - 12, 7);
     pickerObjects.push(panel);
 
-    const title = this.add.text(cx, panelY + 30, t('menu.difficultyTitle'), {
+    const title = this.add.text(cx, panelY + 28, t('menu.difficultyTitle'), {
       fontFamily: FONT_FAMILY, fontSize: '17px',
       color: COLORS.textGold, fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(22);
@@ -169,15 +169,16 @@ export class MenuScene extends Phaser.Scene {
 
     const divGfx = this.add.graphics().setDepth(22);
     divGfx.lineStyle(1, COLORS.textGoldNum, 0.25);
-    divGfx.moveTo(panelX + 20, panelY + 50);
-    divGfx.lineTo(panelX + panelW - 20, panelY + 50);
+    divGfx.moveTo(panelX + 20, panelY + 48);
+    divGfx.lineTo(panelX + panelW - 20, panelY + 48);
     divGfx.strokePath();
     pickerObjects.push(divGfx);
 
-    const levels: { label: string; diff: AiDifficulty; team: 'green' | 'gold' | 'red' }[] = [
-      { label: t('menu.difficulty.easy'),   diff: 'easy',   team: 'green' },
-      { label: t('menu.difficulty.medium'), diff: 'medium', team: 'gold'  },
-      { label: t('menu.difficulty.hard'),   diff: 'hard',   team: 'red'   },
+    const levels: { label: string; diff: AiDifficulty; team: 'green' | 'gold' | 'red' | 'purple' }[] = [
+      { label: t('menu.difficulty.easy'),   diff: 'easy',   team: 'green'  },
+      { label: t('menu.difficulty.medium'), diff: 'medium', team: 'gold'   },
+      { label: t('menu.difficulty.hard'),   diff: 'hard',   team: 'red'    },
+      { label: t('menu.difficulty.master'), diff: 'master', team: 'purple' },
     ];
 
     const destroyPicker = () => {
@@ -193,10 +194,11 @@ export class MenuScene extends Phaser.Scene {
     };
 
     levels.forEach((lv, i) => {
-      const btnY = panelY + 85 + i * 58;
+      const btnY = panelY + 76 + i * 54;
       const accent =
-        lv.team === 'green' ? COLORS.pieceBgTop :
-        lv.team === 'red'   ? COLORS.pieceBgBottom :
+        lv.team === 'green'  ? COLORS.pieceBgTop :
+        lv.team === 'red'    ? COLORS.pieceBgBottom :
+        lv.team === 'purple' ? 0xbd5cff :
         COLORS.textGoldNum;
 
       const btnGfx = this.add.graphics().setDepth(22);
@@ -205,21 +207,21 @@ export class MenuScene extends Phaser.Scene {
       const draw = (hover: boolean) => {
         btnGfx.clear();
         btnGfx.fillStyle(hover ? 0x3d2010 : 0x2a1208, 1);
-        btnGfx.fillRoundedRect(panelX + 16, btnY - 22, panelW - 32, 44, 6);
+        btnGfx.fillRoundedRect(panelX + 16, btnY - 20, panelW - 32, 42, 6);
         btnGfx.lineStyle(hover ? 2 : 1.5, accent, hover ? 1 : 0.5);
-        btnGfx.strokeRoundedRect(panelX + 16, btnY - 22, panelW - 32, 44, 6);
+        btnGfx.strokeRoundedRect(panelX + 16, btnY - 20, panelW - 32, 42, 6);
         btnGfx.fillStyle(accent, 1);
-        btnGfx.fillRoundedRect(panelX + 16, btnY - 22, 4, 44, { tl: 6, bl: 6, tr: 0, br: 0 });
+        btnGfx.fillRoundedRect(panelX + 16, btnY - 20, 4, 42, { tl: 6, bl: 6, tr: 0, br: 0 });
       };
       draw(false);
 
       const lblMain = this.add.text(cx, btnY, lv.label, {
-        fontFamily: FONT_FAMILY, fontSize: '18px',
+        fontFamily: FONT_FAMILY, fontSize: '17px',
         color: COLORS.textWhite, fontStyle: 'bold',
       }).setOrigin(0.5, 0.5).setDepth(23);
       pickerObjects.push(lblMain);
 
-      const zone = this.add.zone(cx, btnY, panelW - 32, 44)
+      const zone = this.add.zone(cx, btnY, panelW - 32, 42)
         .setInteractive({ useHandCursor: true })
         .setDepth(23);
       pickerObjects.push(zone);

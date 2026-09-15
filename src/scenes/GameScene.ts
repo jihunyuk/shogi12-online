@@ -6,6 +6,7 @@ import { BOARD_COLS, BOARD_ROWS, CELL_SIZE, COLORS, FONT_FAMILY, FONT_SIZES } fr
 import { GAME_WIDTH, GAME_HEIGHT } from '@/config/phaserConfig';
 import { AdsService } from '@/ads/adsService';
 import { getRemainingSeconds } from '@/engine/timer';
+import { getGameStateEvaluation } from '@/ai/ai';
 
 
 // ── Layout constants ──────────────────────────────────────────────────────────
@@ -58,6 +59,10 @@ export class GameScene extends Phaser.Scene {
   private topPanelSub!: Phaser.GameObjects.Text;
   private botPanelName!: Phaser.GameObjects.Text;
   private botPanelSub!: Phaser.GameObjects.Text;
+
+  // Real-time evaluation advantage meter
+  private evalBarGfx!: Phaser.GameObjects.Graphics;
+  private evalScoreLabel!: Phaser.GameObjects.Text;
 
   private _selectedReservePiece: PieceType | null = null;
   private _reserveChips: Array<{ side: Side; piece: PieceType; cx: number; cy: number }> = [];
@@ -178,6 +183,12 @@ export class GameScene extends Phaser.Scene {
       }).setOrigin(1, 0.5).setDepth(DEPTH_HUD);
     }
 
+    // Live advantage meter
+    this.evalBarGfx = this.add.graphics().setDepth(DEPTH_HUD);
+    this.evalScoreLabel = this.add.text(GAME_WIDTH / 2, 157, '', {
+      fontFamily: FONT_FAMILY, fontSize: '8px', color: COLORS.textSecondary, letterSpacing: 1,
+    }).setOrigin(0.5, 0).setDepth(DEPTH_HUD);
+
     this._setupInteraction();
   }
 
@@ -289,14 +300,15 @@ export class GameScene extends Phaser.Scene {
   // ── Render pipeline ───────────────────────────────────────────
   private _render(state: GameState): void {
     if (state.status === 'finished') {
-      // Pass rating snapshot for online mode so ResultScene can display the delta
+      // Pass rating snapshot and full moveHistory so ResultScene can display graph & stats
       const playerId    = state.online?.myProfile?.id;
       const ratingBefore = state.online?.myProfile?.rating;
       this.time.delayedCall(500, () =>
         this.scene.start('Result', {
-          winner:    state.winner,
-          winReason: state.winReason,
-          mode:      this.mode,
+          winner:      state.winner,
+          winReason:   state.winReason,
+          mode:        this.mode,
+          moveHistory: state.moveHistory,
           ...(playerId         ? { playerId }    : {}),
           ...(ratingBefore != null ? { ratingBefore } : {}),
         }),
@@ -313,6 +325,41 @@ export class GameScene extends Phaser.Scene {
     this._drawPieces(state);
     this._drawReserves(state);
     this._updateHUD(state);
+    this._updateAdvantageBar(state);
+  }
+
+  private _updateAdvantageBar(state: GameState): void {
+    const rawScore = getGameStateEvaluation(state);
+    // Sigmoid compression: 1 / (1 + exp(-score / 500))
+    const ratio = 1 / (1 + Math.exp(-rawScore / 500));
+
+    this.evalBarGfx.clear();
+
+    const barX = BOARD_LEFT;
+    const barY = 149;
+    const barW = BOARD_W;
+    const barH = 5;
+    const radius = 2.5;
+
+    // Background: Top side color (dark crimson / wood tone)
+    this.evalBarGfx.fillStyle(COLORS.pieceBgTop, 0.45);
+    this.evalBarGfx.fillRoundedRect(barX, barY, barW, barH, radius);
+
+    // Foreground: Bottom side advantage fill
+    const fillW = Math.max(0, Math.min(barW, barW * ratio));
+    this.evalBarGfx.fillStyle(COLORS.pieceBgBottom, 0.95);
+    this.evalBarGfx.fillRoundedRect(barX, barY, fillW, barH, radius);
+
+    // Center divider mark (50% balance point)
+    this.evalBarGfx.lineStyle(1, 0xffffff, 0.7);
+    this.evalBarGfx.moveTo(barX + barW / 2, barY - 1);
+    this.evalBarGfx.lineTo(barX + barW / 2, barY + barH + 1);
+    this.evalBarGfx.strokePath();
+
+    // Advantage numerical label
+    const displayVal = (rawScore / 100).toFixed(1);
+    const sign = rawScore > 0 ? '+' : '';
+    this.evalScoreLabel.setText(`${t('game.advantage')} ${sign}${displayVal}`);
   }
 
   private get _humanSide(): Side {

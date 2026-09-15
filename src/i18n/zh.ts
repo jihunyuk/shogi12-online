@@ -21,6 +21,7 @@ export const zh = {
 
   'result.win': '你赢了！',
   'result.lose': '你输了。',
+  'result.draw': '和棋',
   'result.playAgain': '再来一局',
   'result.backToMenu': '返回菜单',
 
@@ -30,6 +31,9 @@ export const zh = {
   'result.reason.capturedByOpponent':'己方的王被吃掉',
   'result.reason.opponentEntry':     '对方入玉胜利',
   'result.reason.timeout':           '超时败北',
+  'result.reason.repetition':        '千日手 (局面三次重复)',
+  'result.evalGraphTitle':           '局势分析图表',
+  'game.advantage':                  '形势',
 
   'rules.title': '游戏规则',
   'rules.objective': '目标',
@@ -87,6 +91,7 @@ export const zh = {
   'menu.difficulty.easy':   '低',
   'menu.difficulty.medium': '中',
   'menu.difficulty.hard':   '高',
+  'menu.difficulty.master': '宗师 (Master)',
 
   'matchmaking.ratingBased':    '积分匹配',
   'matchmaking.autoMatch':      '与积分相近的玩家自动匹配',
